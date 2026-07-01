@@ -45,9 +45,9 @@ Done when: `pnpm test` passes for pagination unit tests, and an end-to-end mocke
 Mode: loopable
 
 ## Phase 6 — Error surfacing & opt-in live integration tests
-- [ ] Upstream HTTP failures surface immediately as MCP tool errors — no retry/backoff logic anywhere in the request path
-- [ ] Vitest unit tests asserting a mocked upstream failure (e.g. non-2xx, network error) becomes a tool error, not a thrown/uncaught exception or a silent empty result
-- [ ] Opt-in live integration test suite (real Wallapop API calls) gated behind an env var, excluded from the default `pnpm test` run
+- [x] Upstream HTTP failures surface immediately as MCP tool errors — no retry/backoff logic anywhere in the request path
+- [x] Vitest unit tests asserting a mocked upstream failure (e.g. non-2xx, network error) becomes a tool error, not a thrown/uncaught exception or a silent empty result
+- [x] Opt-in live integration test suite (real Wallapop API calls) gated behind an env var, excluded from the default `pnpm test` run
 Done when: `pnpm test` (default, mocked-only) passes including the upstream-failure-to-tool-error cases, and running the live suite with the env var set against the real API returns a non-empty `search` result (run manually, not part of CI).
 Mode: loopable
 <!-- reclassified from supervised 2026-07-01 (user decision, see docs/decisions/0003): live
