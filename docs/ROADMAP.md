@@ -23,10 +23,10 @@ Mode: loopable
      unauthenticated public GET, no money/auth/delete/prod-mutation — low/reversible blast radius -->
 
 ## Phase 3 — `search` tool: request building
-- [ ] Map full `api/v3/search` parameter surface (keywords, category_id, min/max price, distance_in_km, order_by, etc.) to an outgoing request
-- [ ] Default location fallback to Barcelona-center lat/long when caller omits coordinates
-- [ ] Hardcoded, non-configurable request headers (User-Agent, X-DeviceOS)
-- [ ] Mocked-HTTP Vitest unit tests asserting constructed request params/headers for representative inputs
+- [x] Map full `api/v3/search` parameter surface (keywords, category_id, min/max price, distance_in_km, order_by, etc.) to an outgoing request
+- [x] Default location fallback to Barcelona-center lat/long when caller omits coordinates
+- [x] Hardcoded, non-configurable request headers (User-Agent, X-DeviceOS)
+- [x] Mocked-HTTP Vitest unit tests asserting constructed request params/headers for representative inputs
 Done when: `pnpm test` passes for request-building unit tests, covering at least one case with full params and one with only `keywords` (verifying the Barcelona-center default).
 Mode: loopable
 
