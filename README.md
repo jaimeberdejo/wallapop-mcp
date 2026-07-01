@@ -54,6 +54,29 @@ not present on every raw item), `createdAt`.
 Free-text search over Wallapop's category tree (`query`, optional). With no query, returns the
 18 top-level categories.
 
+## Use cases
+
+Example prompts to an LLM client once `wallapop-mcp` is connected:
+
+- **Simple search** — "Find iPhone 11s for sale on Wallapop under €80"
+  → `search({ keywords: "iphone 11", maxPrice: 80 })`
+- **Location-aware search** — "What secondhand bikes are listed near Barcelona right now?"
+  → `search({ keywords: "bicicleta" })` (defaults to Barcelona-center when no location is given)
+- **Category-scoped shopping** — "Show me what categories exist under Technology & electronics,
+  then find cheap laptops in that category"
+  → `list_categories({ query: "electronics" })` → `search({ keywords: "laptop", categoryId: <id> })`
+- **Price-range research** — "What's the typical asking price for a PS5 on Wallapop? Show me 20
+  listings sorted by price"
+  → `search({ keywords: "ps5", maxResults: 20, orderBy: "price_low_to_high" })`
+- **Pagination / "show me more"** — "Show me the next page of those results"
+  → `search({ keywords: "ps5", nextPage: "<cursor from previous response>" })`
+- **Browsing the taxonomy** — "What are Wallapop's top-level categories?"
+  → `list_categories({})`
+
+**Known limitation:** `Listing.condition` is usually `undefined` — Wallapop's search API doesn't
+reliably expose item condition (see `docs/STATE.md`'s open questions) — so "find only *new*
+items" isn't reliably answerable from `search` alone today.
+
 ## Development
 
 ```bash
