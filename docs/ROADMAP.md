@@ -18,8 +18,9 @@ Mode: loopable
 - [ ] `list_categories` tool: free-text search over the static tree; returns top-level categories when no query is given
 - [ ] Vitest unit tests for the flatten/search logic against a fixture category tree (no live network call in tests)
 Done when: `pnpm test` passes for category flatten/search logic, and calling `list_categories` with no query returns exactly the top-level categories from the generated static file.
-Mode: supervised
-<!-- supervised: the codegen script makes a live call to Wallapop's unofficial API — an external side effect outside our control -->
+Mode: loopable
+<!-- reclassified from supervised 2026-07-01 (user decision, see docs/decisions/0002): read-only,
+     unauthenticated public GET, no money/auth/delete/prod-mutation — low/reversible blast radius -->
 
 ## Phase 3 — `search` tool: request building
 - [ ] Map full `api/v3/search` parameter surface (keywords, category_id, min/max price, distance_in_km, order_by, etc.) to an outgoing request
