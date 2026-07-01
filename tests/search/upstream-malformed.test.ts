@@ -101,40 +101,58 @@ describe("searchListings — upstream malformed/failure responses", () => {
     ).rejects.toThrow("Unexpected token in JSON");
   });
 
-  it("[77] body missing `data` entirely throws a raw TypeError, not a clear message", async () => {
+  it("[77] body missing `data` entirely rejects with a clear, envelope-identifying error", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({}));
 
     await expect(
       searchListings({ keywords: "iphone" }, { fetchImpl }),
-    ).rejects.toThrow(TypeError);
+    ).rejects.toThrow("Malformed Wallapop response: missing data");
   });
 
-  it("[78] body has `data: {}` (missing section) throws a raw TypeError", async () => {
+  it("[78] body has `data: {}` (missing section) rejects with a clear, envelope-identifying error", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ data: {} }));
 
     await expect(
       searchListings({ keywords: "iphone" }, { fetchImpl }),
-    ).rejects.toThrow(TypeError);
+    ).rejects.toThrow("Malformed Wallapop response: missing data.section");
   });
 
-  it("[79] body has `data: { section: {} }` (missing payload) throws a raw TypeError", async () => {
+  it("[79] body has `data: { section: {} }` (missing payload) rejects with a clear, envelope-identifying error", async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValue(jsonResponse({ data: { section: {} } }));
 
     await expect(
       searchListings({ keywords: "iphone" }, { fetchImpl }),
-    ).rejects.toThrow(TypeError);
+    ).rejects.toThrow(
+      "Malformed Wallapop response: missing data.section.payload",
+    );
   });
 
-  it("[80] body has `data: { section: { payload: {} } }` (missing items) throws a raw TypeError", async () => {
+  it("[80] body has `data: { section: { payload: {} } }` (missing items) rejects with a clear, envelope-identifying error", async () => {
     const fetchImpl = vi
       .fn()
       .mockResolvedValue(jsonResponse({ data: { section: { payload: {} } } }));
 
     await expect(
       searchListings({ keywords: "iphone" }, { fetchImpl }),
-    ).rejects.toThrow(TypeError);
+    ).rejects.toThrow(
+      "Malformed Wallapop response: missing data.section.payload.items",
+    );
+  });
+
+  it("[93] `data.section.payload.items` present but not an array rejects with a clear error", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      jsonResponse({
+        data: { section: { payload: { items: "not-an-array" } } },
+      }),
+    );
+
+    await expect(
+      searchListings({ keywords: "iphone" }, { fetchImpl }),
+    ).rejects.toThrow(
+      "Malformed Wallapop response: data.section.payload.items is not an array",
+    );
   });
 
   it("[81] an item with an empty images array rejects end-to-end with a clear, item-identifying error", async () => {

@@ -1,9 +1,42 @@
 import { buildSearchRequest } from "./request.js";
 import { normalizeItem, type Listing } from "./listing.js";
-import type { RawSearchResponse, SearchToolInput } from "./types.js";
+import type {
+  RawSearchItem,
+  RawSearchResponse,
+  SearchToolInput,
+} from "./types.js";
 
 const DEFAULT_MAX_RESULTS = 40;
 const MAX_RESULTS_CAP = 200;
+
+function extractItems(body: RawSearchResponse): RawSearchItem[] {
+  const data = body.data;
+  if (!data) {
+    throw new Error("Malformed Wallapop response: missing data");
+  }
+  const section = data.section;
+  if (!section) {
+    throw new Error("Malformed Wallapop response: missing data.section");
+  }
+  const payload = section.payload;
+  if (!payload) {
+    throw new Error(
+      "Malformed Wallapop response: missing data.section.payload",
+    );
+  }
+  const items = payload.items;
+  if (items === undefined) {
+    throw new Error(
+      "Malformed Wallapop response: missing data.section.payload.items",
+    );
+  }
+  if (!Array.isArray(items)) {
+    throw new Error(
+      "Malformed Wallapop response: data.section.payload.items is not an array",
+    );
+  }
+  return items;
+}
 
 export interface SearchListingsResult {
   listings: Listing[];
@@ -43,7 +76,7 @@ export async function searchListings(
       );
     }
     const body = await response.json();
-    const items = body.data.section.payload.items;
+    const items = extractItems(body);
 
     for (const raw of items) {
       if (listings.length >= maxResults) break;
