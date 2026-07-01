@@ -65,4 +65,13 @@ export interface RawSearchResponse {
       };
     };
   };
+  meta?: {
+    /** Opaque pagination cursor for the next page — passed through untouched. */
+    next_page?: string;
+  };
+}
+
+export interface SearchToolInput extends SearchInput {
+  /** Default 40, clamped to a 200 cap. */
+  maxResults?: number;
 }
