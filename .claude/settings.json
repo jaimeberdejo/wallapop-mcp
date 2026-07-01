@@ -1,0 +1,83 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Read(./secrets/**)",
+      "Read(**/secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/*.p8)",
+      "Read(**/credentials.json)",
+      "Read(**/id_rsa)",
+      "Read(**/.envrc)",
+      "Read(.envrc)",
+      "Read(**/.netrc)",
+      "Read(**/.npmrc)",
+      "Read(**/.pypirc)",
+      "Read(**/.git-credentials)",
+      "Read(**/*.tfstate)",
+      "Read(**/*.tfvars)",
+      "Read(**/*.p12)",
+      "Read(**/*.pfx)",
+      "Read(**/*.jks)",
+      "Read(**/id_ed25519)",
+      "Read(**/id_ecdsa)",
+      "Read(**/id_dsa)",
+      "Read(**/*service*account*.json)",
+      "Bash(cat *.env*)",
+      "Bash(cat *.pem)",
+      "Bash(cat *.key)",
+      "Bash(cat **/secrets/**)",
+      "Bash(cat *credentials*)",
+      "Bash(env)",
+      "Bash(printenv*)",
+      "Bash(curl *)",
+      "Bash(wget *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/session-start.sh" }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/steer.sh" }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/kill-switch.sh" },
+          { "type": "command", "command": "bash .claude/hooks/steer.sh" }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/format-on-edit.sh" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/test-gate.sh" },
+          { "type": "command", "command": "bash .claude/hooks/commit-on-stop.sh" },
+          { "type": "command", "command": "bash .claude/hooks/ownership-nudge.sh" }
+        ]
+      }
+    ]
+  }
+}
