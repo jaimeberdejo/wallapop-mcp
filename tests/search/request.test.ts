@@ -25,10 +25,14 @@ describe("buildSearchRequest", () => {
     expect(url.searchParams.get("latitude")).toBe("41.1");
     expect(url.searchParams.get("longitude")).toBe("1.2");
     expect(url.searchParams.get("next_page")).toBe("opaque-cursor-token");
+    expect(url.searchParams.get("filters_source")).toBe("quick_filters");
+    expect(url.searchParams.get("source")).toBe("search_box");
 
     expect(headers).toEqual({
       "User-Agent": "Mozilla/5.0",
       "X-DeviceOS": "0",
+      Origin: "https://es.wallapop.com",
+      Referer: "https://es.wallapop.com/",
     });
   });
 
@@ -48,5 +52,7 @@ describe("buildSearchRequest", () => {
     expect(url.searchParams.has("distance")).toBe(false);
     expect(url.searchParams.has("order_by")).toBe(false);
     expect(url.searchParams.has("next_page")).toBe(false);
+    expect(url.searchParams.get("filters_source")).toBe("quick_filters");
+    expect(url.searchParams.get("source")).toBe("search_box");
   });
 });
