@@ -38,9 +38,9 @@ Done when: `pnpm test` passes for normalization unit tests, and a fixture raw re
 Mode: loopable
 
 ## Phase 5 — `search` tool: pagination & result clamping
-- [ ] Auto-pagination loop driven by `max_results` (default 40, cap 200), passing the opaque `next_page` cursor through untouched (never decoded/reconstructed)
-- [ ] Wire request building (Phase 3) + normalization (Phase 4) + pagination into the end-to-end `search` MCP tool
-- [ ] Mocked-HTTP Vitest unit tests asserting the pagination loop stops at `max_results`/the 200 cap and cursor pass-through is untouched
+- [x] Auto-pagination loop driven by `max_results` (default 40, cap 200), passing the opaque `next_page` cursor through untouched (never decoded/reconstructed)
+- [x] Wire request building (Phase 3) + normalization (Phase 4) + pagination into the end-to-end `search` MCP tool
+- [x] Mocked-HTTP Vitest unit tests asserting the pagination loop stops at `max_results`/the 200 cap and cursor pass-through is untouched
 Done when: `pnpm test` passes for pagination unit tests, and an end-to-end mocked `search` tool call with `keywords: "iphone"` and no location returns a non-empty list of `Listing`s within the requested `max_results` bound (satisfies the spec's success criterion under mocked HTTP).
 Mode: loopable
 
