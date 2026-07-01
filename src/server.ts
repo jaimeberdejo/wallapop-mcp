@@ -24,13 +24,13 @@ export function createServer(deps: CreateServerDeps = {}): McpServer {
     "list_categories",
     {
       description:
-        "Free-text search over Wallapop's category tree. With no query, returns the top-level categories.",
+        "Free-text, case-insensitive, accent- and whitespace-insensitive search over Wallapop's static category tree. Use it to resolve a category name to the numeric categoryId accepted by the search tool's categoryId argument. With no query (or an empty/whitespace-only query), returns only the top-level categories.",
       inputSchema: {
         query: z
           .string()
           .optional()
           .describe(
-            "Case-insensitive substring to match against category names.",
+            "Case-insensitive, accent- and whitespace-insensitive substring to match against category names.",
           ),
       },
     },
@@ -46,21 +46,62 @@ export function createServer(deps: CreateServerDeps = {}): McpServer {
     "search",
     {
       description:
-        "Search Wallapop's marketplace. Defaults to the Barcelona-center location when latitude/longitude are omitted.",
+        "Search Wallapop's marketplace listings. Read-only: no login, purchase, messaging, reservation, or favoriting is performed. Defaults to the Barcelona-center location when latitude/longitude are omitted. Returns up to maxResults listings (default 40, hard-capped at 200 even if a higher value is requested). Item condition (e.g. new/used) is rarely present in Wallapop's raw data — treat it as unreliable and do not tell the user results are filtered by condition.",
       inputSchema: {
-        keywords: z.string().optional(),
-        categoryId: z.number().optional(),
-        minPrice: z.number().nonnegative().optional(),
-        maxPrice: z.number().nonnegative().optional(),
-        distanceInKm: z.number().positive().optional(),
-        orderBy: z.string().optional(),
-        latitude: z.number().min(-90).max(90).optional(),
-        longitude: z.number().min(-180).max(180).optional(),
+        keywords: z
+          .string()
+          .optional()
+          .describe("Free-text keywords, passed through to Wallapop as-is."),
+        categoryId: z
+          .number()
+          .optional()
+          .describe(
+            "Numeric Wallapop category id (e.g. from list_categories) to restrict results to.",
+          ),
+        minPrice: z
+          .number()
+          .nonnegative()
+          .optional()
+          .describe(
+            "Minimum price in EUR, inclusive. Must be zero or greater.",
+          ),
+        maxPrice: z
+          .number()
+          .nonnegative()
+          .optional()
+          .describe(
+            "Maximum price in EUR, inclusive. Must be zero or greater, and must not be less than minPrice when both are given.",
+          ),
+        distanceInKm: z
+          .number()
+          .positive()
+          .optional()
+          .describe(
+            "Search radius in kilometers from the search location. Must be greater than zero.",
+          ),
+        orderBy: z
+          .string()
+          .optional()
+          .describe(
+            'Sort order, passed through to Wallapop unvalidated (e.g. "price_low_to_high"). No enumerated list of legal values is confirmed here; an invalid value may be ignored or rejected upstream rather than erroring in this tool.',
+          ),
+        latitude: z
+          .number()
+          .min(-90)
+          .max(90)
+          .optional()
+          .describe("Search latitude in decimal degrees, -90 to 90."),
+        longitude: z
+          .number()
+          .min(-180)
+          .max(180)
+          .optional()
+          .describe("Search longitude in decimal degrees, -180 to 180."),
         nextPage: z
           .string()
           .optional()
           .describe(
-            "Opaque pagination cursor from a previous search's response.",
+            "Opaque pagination cursor from a previous search response's nextPage field. Pass it back exactly as received (unmodified) to fetch the next page; do not construct or edit it.",
           ),
         maxResults: z
           .number()
