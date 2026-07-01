@@ -6,10 +6,10 @@
 > auto-tick and stops for human review. Use `loopable` only for low-risk, verifiable phases.
 
 ## Phase 1 — Project scaffold & MCP server skeleton
-- [ ] pnpm-managed TypeScript/ESM project (package.json, tsconfig, tsup build config, vitest config)
-- [ ] ESLint + Prettier configured, wired to `pnpm lint` / `pnpm format`; `pnpm typecheck` runs `tsc --noEmit`
-- [ ] Minimal MCP server over stdio transport that responds to `tools/list` with an empty/placeholder tool set
-- [ ] `pnpm build` produces a runnable single-file bundle; a smoke test starts the server and lists tools
+- [x] pnpm-managed TypeScript/ESM project (package.json, tsconfig, tsup build config, vitest config)
+- [x] ESLint + Prettier configured, wired to `pnpm lint` / `pnpm format`; `pnpm typecheck` runs `tsc --noEmit`
+- [x] Minimal MCP server over stdio transport that responds to `tools/list` with an empty/placeholder tool set
+- [x] `pnpm build` produces a runnable single-file bundle; a smoke test starts the server and lists tools
 Done when: `pnpm build && pnpm test && pnpm typecheck && pnpm lint` pass, and a manual `tools/list` call against the built stdio server returns a response (no tools required yet).
 Mode: loopable
 
