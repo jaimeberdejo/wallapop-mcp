@@ -72,7 +72,9 @@ describe("createServer", () => {
       data: { section: { payload: { items } } },
       meta: {},
     };
-    const fetchImpl = vi.fn().mockResolvedValue({ json: async () => body });
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200, json: async () => body });
 
     const client = await connectedClient({ fetchImpl });
 
@@ -87,5 +89,25 @@ describe("createServer", () => {
     expect(parsed.listings.length).toBeGreaterThan(0);
     expect(parsed.listings.length).toBeLessThanOrEqual(40);
     expect(fetchImpl).toHaveBeenCalled();
+  });
+
+  it("surfaces an upstream search failure as an MCP tool error, not a crash or silent empty result", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({ status: 400, message: "", errors: [] }),
+    });
+
+    const client = await connectedClient({ fetchImpl });
+
+    const result = await client.callTool({
+      name: "search",
+      arguments: { keywords: "iphone" },
+    });
+
+    const content = result.content as Array<{ type: string; text: string }>;
+
+    expect(result.isError).toBe(true);
+    expect(content[0]!.text).toMatch(/wallapop search request failed.*400/i);
   });
 });

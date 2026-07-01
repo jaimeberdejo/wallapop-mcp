@@ -33,7 +33,15 @@ function page(items: RawSearchItem[], nextPage?: string): RawSearchResponse {
 }
 
 function jsonResponse(body: RawSearchResponse) {
-  return { json: async () => body } as Response;
+  return { ok: true, status: 200, json: async () => body } as Response;
+}
+
+function errorResponse(status: number) {
+  return {
+    ok: false,
+    status,
+    json: async () => ({ status, message: "", errors: [] }),
+  } as unknown as Response;
 }
 
 describe("searchListings", () => {
@@ -96,5 +104,21 @@ describe("searchListings", () => {
 
     expect(result.listings).toHaveLength(5);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws a clear error on a non-2xx upstream response, instead of silently misreading the error body as data", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(errorResponse(400));
+
+    await expect(
+      searchListings({ keywords: "iphone" }, { fetchImpl }),
+    ).rejects.toThrow(/wallapop search request failed.*400/i);
+  });
+
+  it("propagates a network-level failure instead of swallowing it", async () => {
+    const fetchImpl = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
+
+    await expect(
+      searchListings({ keywords: "iphone" }, { fetchImpl }),
+    ).rejects.toThrow("fetch failed");
   });
 });
