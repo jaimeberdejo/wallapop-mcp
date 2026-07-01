@@ -19,9 +19,13 @@ proper MCP tool errors (no retry/backoff); opt-in live integration suite
 decision (ADR-002, ADR-003).
 
 ## Next action
-Milestone complete. Options: run the `milestone` skill to archive this roadmap and start the
-next batch, or just use the server as-is (not yet published to npm — that's a deliberate,
-unautomated step).
+Milestone complete and published: `wallapop-mcp` is live on npm (`0.1.0` published
+2026-07-01T21:59:57Z, `0.1.1` published 2026-07-01T22:11:17Z), confirmed via `npm view
+wallapop-mcp` and a live `npx wallapop-mcp@0.1.1` call returning a correct `tools/list`
+response. Options: run the `milestone` skill to archive this roadmap and start the next batch,
+or continue iterating on the published package — this cycle hardened envelope validation,
+category-match normalization, input-range validation, and tool description/schema clarity (see
+`IMPROVEMENT_REPORT.md`).
 
 ## Open questions
 - `scripts/test-evidence.sh`'s test-command resolver picks `pytest -q` over pnpm/vitest when a

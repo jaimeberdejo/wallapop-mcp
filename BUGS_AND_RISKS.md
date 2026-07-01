@@ -28,71 +28,62 @@ Audit date: 2026-07-02. Scope: `src/**` as of commit `1fd6fb8` plus the fix desc
   and unaffiliated with this project, so a category or edge case with a missing field can't be
   ruled out. This fix is cheap insurance with zero contract cost.
 
-## Bugs / gaps found and NOT fixed (out of scope for a minimal cycle — flagged for a decision)
+## Bugs / gaps found and fixed in the follow-up hardening cycle (2026-07-02)
 
-### #2 — [P2] Structural malformation of the response body still surfaces raw `TypeError`s
+### #2 — [P2, FIXED] Structural malformation of the response body no longer surfaces raw `TypeError`s
 - **Where**: `src/search/paginate.ts` — `body.data.section.payload.items` and the `for...of items`
-  loop have no guards.
+  loop had no guards.
 - **Failure scenario**: a response missing `data`, `data.section`, `data.section.payload`, or
   `data.section.payload.items` (Wallapop changing its response shape, or a proxy/CDN returning an
-  unexpected body) produces `Cannot read properties of undefined (reading 'section'/'payload'/
+  unexpected body) produced `Cannot read properties of undefined (reading 'section'/'payload'/
   'items')` or `items is not iterable` — same class of problem as #1, but at the response-envelope
   level rather than per-item.
-- **Why not fixed here**: unlike #1 (a narrow, two-line guard with an obvious message), this would
-  require deciding how much of the response shape to defensively validate and what error taxonomy
-  to use — a slightly bigger design decision than "minimal fix," and the project's own `SPEC.md`
-  frames upstream-failure handling as a deliberate, already-completed phase (Phase 6). Recommend
-  scoping this as its own small phase: wrap the `data.section.payload.items` access in a single
-  guard that throws `Wallapop search response missing expected shape (data.section.payload.items)`
-  — mirrors the existing `HTTP <status>` error's clarity at near-zero cost.
-- **Demonstrated by**: `tests/search/upstream-malformed.test.ts` tests 77-80 (all pass, all assert
-  the current raw message — i.e. this is documented, not hidden).
+- **Fix applied**: a new private `extractItems(body)` function in `src/search/paginate.ts` guards
+  each level of the envelope and throws `` `Malformed Wallapop response: missing <dotted.path>` ``
+  (or `` `... is not an array` `` when `items` is present but not an array), mirroring `#1`'s
+  per-item error-message convention.
+- **Tests updated**: `tests/search/upstream-malformed.test.ts` tests `[77]`-`[80]` now assert the
+  new clear message instead of a bare `TypeError`; a new test `[93]` covers `items` present but not
+  an array.
 
-### #3 — [P2] `orderBy` has no enumerated legal values anywhere in the contract
+### #3 — [P2, FIXED via description] `orderBy` now documents itself as unvalidated pass-through
 - **Where**: `src/server.ts` (`orderBy: z.string().optional()`, no `.describe()`) and
   `src/search/request.ts` (passed through verbatim to `order_by`).
-- **Impact**: an LLM client asked to "sort by price" has to guess a string value (the only example,
-  `"price_low_to_high"`, lives in the README, not in anything the model sees at tool-call time). A
-  wrong guess silently no-ops or is rejected upstream with no signal distinguishing "bad sort value"
-  from any other failure.
-- **Recommendation**: add a `.describe()` listing known-good values once they're confirmed against
-  the live API (needs a small research spike — Wallapop doesn't document its own enum), or leave it
-  as free text but at least state in the description "unvalidated, passed through to Wallapop
-  as-is" so the LLM knows not to trust a wrong guess. This is a documentation/DX fix, not a code fix.
+- **Fix applied**: `orderBy` now has a `.describe()` stating it's passed through to Wallapop
+  unvalidated, with no enumerated list of legal values confirmed anywhere in this codebase — an
+  invalid value may be ignored or rejected upstream rather than erroring in this tool. No enum was
+  invented, since none is confirmed (would require a live-API research spike, out of scope).
+- **Tests added**: `tests/mcp/tool-descriptions.test.ts` asserts the `orderBy` field's
+  `.describe()` text mentions both "Wallapop" and "unvalidated"/"pass-through".
 
-### #4 — [P2] `Listing.condition`'s unreliability isn't visible at the tool-schema level
-- **Where**: `src/server.ts`'s `search` tool description never mentions `condition`; the caveat only
-  exists in `README.md`.
-- **Impact**: an LLM client that only sees the tool's `description`/schema at call time (which is
-  the common case — MCP clients don't necessarily fetch or display the README) has no way to know
-  it shouldn't promise reliable "only show new items" filtering.
-- **Recommendation**: append one sentence to the `search` tool's `description` string, e.g. "Item
-  condition is rarely present in Wallapop's data and cannot be filtered on." Pure documentation
-  change, no code/contract change.
+### #4 — [P2, FIXED] `Listing.condition`'s unreliability is now visible at the tool-schema level
+- **Where**: `src/server.ts`'s `search` tool description previously never mentioned `condition`;
+  the caveat only existed in `README.md`.
+- **Fix applied**: the `search` tool's top-level `description` now states item condition is rarely
+  present in Wallapop's raw data and should be treated as unreliable, not promised as a filter.
+- **Tests added**: `tests/mcp/tool-descriptions.test.ts` asserts the `search` description mentions
+  "condition".
 
-### #5 — [P3] `list_categories` query matching has no accent-folding or trimming
+### #5 — [P3, FIXED] `list_categories` query matching is now accent- and whitespace-insensitive
 - **Where**: `src/categories/search.ts` — `query.toLowerCase().includes(needle)`.
-- **Impact**: `"tecnologia"` (no accent) will NOT match a Wallapop category actually named with an
-  accent (e.g. `"Tecnología"`), and `"  tech  "` (stray whitespace, easy for an LLM to produce)
-  returns `[]` instead of matching `"tech"`. Both are plausible LLM-generated query shapes.
-- **Recommendation** (not applied — product decision, not a "bug" in the strict sense): normalize
-  both sides with `.normalize("NFD").replace(/[̀-ͯ]/g, "")` and `.trim()` before
-  comparing. Small, low-risk change, but changes observable search behavior, so flagging for a
-  decision rather than silently changing it.
+- **Fix applied**: a new private `normalizeSearchText()` helper trims and NFD-normalizes/strips
+  diacritics from both the query and each category name before comparing, so `"tecnologia"` now
+  matches `"Tecnología"` and `"  tech  "` matches the same results as `"tech"`. An empty or
+  whitespace-only query continues to behave like "no query" (returns top-level categories only).
+- **Tests updated**: `tests/categories/search-behavior.test.ts` tests `[23]`/`[24]` now assert the
+  folded/trimmed matches; a new test `[94]` locks in the whitespace-only-query decision.
 
-### #6 — [P2] `docs/STATE.md` is factually stale about npm publish status
+### #6 — [P2, FIXED] `docs/STATE.md` no longer claims the package isn't published
 - **Where**: `docs/STATE.md` — "Milestone complete... not yet published to npm — that's a
   deliberate, unautomated step."
 - **Reality**: `npm view wallapop-mcp` confirms the package **is** published — `0.1.0` on
   2026-07-01T21:59:57Z and `0.1.1` on 2026-07-01T22:11:17Z, both before this audit session, by
-  `jaimeberdejo <jaimeberdejo1902@gmail.com>`. A live `npx -y wallapop-mcp@0.1.1` call during this
-  audit returned a correct `tools/list` response against the real registry package.
-  `README.md`'s `npx wallapop-mcp` install instructions are therefore **accurate**, not aspirational
-  — but the project's own state-tracking doc contradicts that. This is exactly the kind of
-  "docs vs. code/reality" drift the audit was asked to check for.
-- **Recommendation**: update `docs/STATE.md`'s "Next action" section to reflect that publish already
-  happened; not fixed here since it's a docs-only change outside `src/**`/`tests/**` and wasn't part
-  of the explicit fix authorization for this audit.
+  `jaimeberdejo <jaimeberdejo1902@gmail.com>`. A live `npx -y wallapop-mcp@0.1.1` call during the
+  original audit returned a correct `tools/list` response against the real registry package.
+  `README.md`'s `npx wallapop-mcp` install instructions were already accurate — only `STATE.md`
+  contradicted reality.
+- **Fix applied**: `docs/STATE.md`'s "Next action" section now states the package is published,
+  with the confirmed version/timestamp evidence.
 
 ## Non-bugs worth recording (confirmed safe / confirmed by design)
 
@@ -122,9 +113,9 @@ Audit date: 2026-07-02. Scope: `src/**` as of commit `1fd6fb8` plus the fix desc
 
 | # | Severity | Status | One-line |
 |---|---|---|---|
-| 1 | P1 | **Fixed this cycle** | Crash on item missing images/price → now a clear, item-identifying error |
-| 2 | P2 | Open | Malformed response envelope (`data`/`section`/`payload`/`items` missing) → raw `TypeError` |
-| 3 | P2 | Open | `orderBy` has no documented legal values anywhere the LLM can see |
-| 4 | P2 | Open | `condition` unreliability not surfaced in the tool schema/description itself |
-| 5 | P3 | Open | No accent-folding / trimming in `list_categories` query matching |
-| 6 | P2 | Open (docs-only) | `docs/STATE.md` incorrectly claims the package isn't published |
+| 1 | P1 | **Fixed** | Crash on item missing images/price → now a clear, item-identifying error |
+| 2 | P2 | **Fixed** | Malformed response envelope (`data`/`section`/`payload`/`items` missing) → now a clear, path-naming error |
+| 3 | P2 | **Fixed** | `orderBy` now has a `.describe()` stating it's unvalidated pass-through (no enum invented) |
+| 4 | P2 | **Fixed** | `condition` unreliability now stated in the `search` tool's top-level `description` |
+| 5 | P3 | **Fixed** | `list_categories` query matching is now accent- and whitespace-insensitive |
+| 6 | P2 | **Fixed** | `docs/STATE.md` now correctly states the package is published |
