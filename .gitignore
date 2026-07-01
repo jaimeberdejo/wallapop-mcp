@@ -1,3 +1,14 @@
+# Internal Claude Code tooling and process/audit artifacts — kept locally, not published
+.agents/
+.claude/
+CLAUDE.md
+docs/
+BUGS_AND_RISKS.md
+IMPROVEMENT_REPORT.md
+MCP_USAGE_GUIDE.md
+TEST_MATRIX_100.md
+TEST_REPORT.md
+
 # Autonomy control/scratch files
 AGENT_STOP
 STEER.md

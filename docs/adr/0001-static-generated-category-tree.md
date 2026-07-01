@@ -1,3 +1,0 @@
-# Static generated category tree, checked into the repo
-
-Wallapop's `api/v3/categories` endpoint returns the full taxonomy (18 top-level categories, thousands of leaf nodes), but it's undocumented and could change without notice. We considered fetching it live at server startup or per-request, but decided instead to run a one-off codegen script that fetches the tree and flattens it into a static TypeScript module checked into the repo. This keeps `list_categories` fast and dependency-free at runtime, at the cost of possible drift if Wallapop changes category ids — mitigated by re-running the codegen script manually (or in CI) and diffing against the checked-in file.
