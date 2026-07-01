@@ -50,12 +50,12 @@ export function createServer(deps: CreateServerDeps = {}): McpServer {
       inputSchema: {
         keywords: z.string().optional(),
         categoryId: z.number().optional(),
-        minPrice: z.number().optional(),
-        maxPrice: z.number().optional(),
-        distanceInKm: z.number().optional(),
+        minPrice: z.number().nonnegative().optional(),
+        maxPrice: z.number().nonnegative().optional(),
+        distanceInKm: z.number().positive().optional(),
         orderBy: z.string().optional(),
-        latitude: z.number().optional(),
-        longitude: z.number().optional(),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
         nextPage: z
           .string()
           .optional()
@@ -64,11 +64,22 @@ export function createServer(deps: CreateServerDeps = {}): McpServer {
           ),
         maxResults: z
           .number()
+          .int()
+          .nonnegative()
           .optional()
           .describe("Default 40, clamped to a 200 cap."),
       },
     },
     async (input) => {
+      if (
+        input.minPrice !== undefined &&
+        input.maxPrice !== undefined &&
+        input.minPrice > input.maxPrice
+      ) {
+        throw new Error(
+          `Invalid search input: minPrice (${input.minPrice}) must not exceed maxPrice (${input.maxPrice})`,
+        );
+      }
       const result = await searchListings(input, { fetchImpl });
       return {
         content: [{ type: "text", text: JSON.stringify(result) }],
