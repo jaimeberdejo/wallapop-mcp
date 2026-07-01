@@ -1,6 +1,6 @@
 {
   "name": "wallapop-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server wrapping Wallapop's unofficial public search API",
   "type": "module",
   "license": "MIT",
