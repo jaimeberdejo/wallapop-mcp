@@ -18,13 +18,20 @@ export interface Listing {
 }
 
 export function normalizeItem(raw: RawSearchItem): Listing {
+  if (!raw.price) {
+    throw new Error(`Malformed Wallapop item ${raw.id}: missing price`);
+  }
+  if (!raw.images[0]) {
+    throw new Error(`Malformed Wallapop item ${raw.id}: missing images`);
+  }
+
   return {
     id: raw.id,
     title: raw.title,
     description: raw.description,
     price: raw.price.amount,
     currency: raw.price.currency,
-    imageUrl: raw.images[0]!.urls.big,
+    imageUrl: raw.images[0].urls.big,
     url: `https://es.wallapop.com/item/${raw.web_slug}`,
     location: {
       city: raw.location.city,
