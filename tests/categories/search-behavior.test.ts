@@ -24,12 +24,10 @@ describe("searchCategories behavior audit (cases 21-30)", () => {
     expect(upper).toEqual(lower);
   });
 
-  it("[23] does NOT accent-fold: an accent-stripped query fails to match an accented name", () => {
-    // Discovery note: generated.ts (English-locale Wallapop category tree) contains
-    // zero accented characters (verified via grep for ó/é/í/á/ñ and uppercase variants),
-    // so we can't demonstrate this against generatedCategories directly. We use a small
-    // local fixture with an accented category name instead, exercising the same
-    // searchCategories implementation.
+  it("[23] accent-folds: an accent-stripped query matches an accented category name", () => {
+    // generated.ts (English-locale Wallapop category tree) contains zero accented
+    // characters, so we use a small local fixture with an accented category name
+    // instead, exercising the same searchCategories implementation.
     const fixture: Category[] = [
       { id: 1, name: "Música", path: ["Hobbies & culture"] },
     ];
@@ -37,27 +35,16 @@ describe("searchCategories behavior audit (cases 21-30)", () => {
     const strippedQueryResult = searchCategories(fixture, "musica");
     const accentedQueryResult = searchCategories(fixture, "música");
 
-    // Current actual behavior: plain .toLowerCase() + .includes() does no Unicode
-    // normalization/accent-folding, so "musica" does NOT match "Música".
-    expect(strippedQueryResult).toEqual([]);
+    expect(strippedQueryResult).toEqual(fixture);
     expect(accentedQueryResult).toEqual(fixture);
-    // Improvement note: accent-insensitive matching (e.g. normalizing both sides with
-    // String.prototype.normalize("NFD") and stripping diacritics) would likely be more
-    // forgiving for LLM-generated queries, which may drop accents.
   });
 
-  it("[24] does NOT trim lateral whitespace from the query", () => {
-    // Read search.ts: `query.toLowerCase()` is used verbatim as the substring needle,
-    // with no .trim() call anywhere. A query padded with spaces becomes a needle padded
-    // with spaces, which will only match names that themselves contain that literal
-    // padding — i.e. for ordinary category names, a padded query matches nothing.
+  it("[24] trims lateral whitespace from the query before matching", () => {
     const padded = searchCategories(generatedCategories, "  tech  ");
     const unpadded = searchCategories(generatedCategories, "tech");
 
     expect(unpadded.length).toBeGreaterThan(0);
-    expect(padded).toEqual([]);
-    // Improvement note: trimming the query before matching would make search more
-    // forgiving for LLM-generated queries, which sometimes include incidental whitespace.
+    expect(padded).toEqual(unpadded);
   });
 
   it("[25] empty string query behaves the same as no query (top-level only)", () => {
@@ -66,6 +53,14 @@ describe("searchCategories behavior audit (cases 21-30)", () => {
 
     expect(withEmptyString).toEqual(withNoQuery);
     expect(withEmptyString.every((c) => c.path.length === 0)).toBe(true);
+  });
+
+  it("[94] whitespace-only query behaves the same as empty/no query (top-level only)", () => {
+    const withWhitespace = searchCategories(generatedCategories, "   ");
+    const withNoQuery = searchCategories(generatedCategories);
+
+    expect(withWhitespace).toEqual(withNoQuery);
+    expect(withWhitespace.every((c) => c.path.length === 0)).toBe(true);
   });
 
   it("[26] a query matching nothing returns an empty array", () => {

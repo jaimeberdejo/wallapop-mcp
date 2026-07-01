@@ -1,15 +1,20 @@
 import type { Category } from "./types.js";
 
+function normalizeSearchText(value: string): string {
+  return value.trim().normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
 export function searchCategories(
   categories: Category[],
   query?: string,
 ): Category[] {
-  if (!query) {
+  const trimmedQuery = query?.trim();
+  if (!trimmedQuery) {
     return categories.filter((category) => category.path.length === 0);
   }
 
-  const needle = query.toLowerCase();
+  const needle = normalizeSearchText(trimmedQuery);
   return categories.filter((category) =>
-    category.name.toLowerCase().includes(needle),
+    normalizeSearchText(category.name).includes(needle),
   );
 }
