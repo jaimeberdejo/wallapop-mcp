@@ -14,9 +14,9 @@ Done when: `pnpm build && pnpm test && pnpm typecheck && pnpm lint` pass, and a 
 Mode: loopable
 
 ## Phase 2 — Category tree codegen & `list_categories` tool
-- [ ] One-off codegen script that fetches `api/v3/categories` and flattens it into a static generated TS module (per `docs/adr/0001-static-generated-category-tree.md`), checked into the repo
-- [ ] `list_categories` tool: free-text search over the static tree; returns top-level categories when no query is given
-- [ ] Vitest unit tests for the flatten/search logic against a fixture category tree (no live network call in tests)
+- [x] One-off codegen script that fetches `api/v3/categories` and flattens it into a static generated TS module (per `docs/adr/0001-static-generated-category-tree.md`), checked into the repo
+- [x] `list_categories` tool: free-text search over the static tree; returns top-level categories when no query is given
+- [x] Vitest unit tests for the flatten/search logic against a fixture category tree (no live network call in tests)
 Done when: `pnpm test` passes for category flatten/search logic, and calling `list_categories` with no query returns exactly the top-level categories from the generated static file.
 Mode: loopable
 <!-- reclassified from supervised 2026-07-01 (user decision, see docs/decisions/0002): read-only,
