@@ -31,9 +31,9 @@ Done when: `pnpm test` passes for request-building unit tests, covering at least
 Mode: loopable
 
 ## Phase 4 — `search` tool: response normalization
-- [ ] Map raw `api/v3/search` response items to the trimmed `Listing` shape (id, title, description, price, currency, one image_url, constructed item url, location, condition, created_at)
-- [ ] Explicitly exclude Wallapop-internal presentation fields (bump, favorited, is_top_profile, taxonomy)
-- [ ] Mocked-HTTP Vitest unit tests asserting normalized `Listing` objects match the spec shape exactly, using a fixture raw response
+- [x] Map raw `api/v3/search` response items to the trimmed `Listing` shape (id, title, description, price, currency, one image_url, constructed item url, location, condition, created_at)
+- [x] Explicitly exclude Wallapop-internal presentation fields (bump, favorited, is_top_profile, taxonomy)
+- [x] Mocked-HTTP Vitest unit tests asserting normalized `Listing` objects match the spec shape exactly, using a fixture raw response
 Done when: `pnpm test` passes for normalization unit tests, and a fixture raw response with internal fields present produces `Listing` objects with none of those fields.
 Mode: loopable
 
