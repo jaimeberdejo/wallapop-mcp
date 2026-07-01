@@ -49,8 +49,10 @@ Mode: loopable
 - [ ] Vitest unit tests asserting a mocked upstream failure (e.g. non-2xx, network error) becomes a tool error, not a thrown/uncaught exception or a silent empty result
 - [ ] Opt-in live integration test suite (real Wallapop API calls) gated behind an env var, excluded from the default `pnpm test` run
 Done when: `pnpm test` (default, mocked-only) passes including the upstream-failure-to-tool-error cases, and running the live suite with the env var set against the real API returns a non-empty `search` result (run manually, not part of CI).
-Mode: supervised
-<!-- supervised: exercises live calls to an unofficial third-party API — external side effect, possible blocking/rate-limit risk -->
+Mode: loopable
+<!-- reclassified from supervised 2026-07-01 (user decision, see docs/decisions/0003): live
+     calls are read-only/unauthenticated and opt-in (env-var gated, excluded from default
+     pnpm test); low/reversible blast radius, same reasoning as Phase 2 (ADR-002) -->
 
 ## Phase 7 — Publish packaging
 - [ ] `bin` entry wiring the built stdio server as an executable CLI (`wallapop-mcp`)
