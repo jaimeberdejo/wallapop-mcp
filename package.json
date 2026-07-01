@@ -4,6 +4,12 @@
   "description": "MCP server wrapping Wallapop's unofficial public search API",
   "type": "module",
   "license": "MIT",
+  "bin": {
+    "wallapop-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
