@@ -55,9 +55,9 @@ Mode: loopable
      pnpm test); low/reversible blast radius, same reasoning as Phase 2 (ADR-002) -->
 
 ## Phase 7 — Publish packaging
-- [ ] `bin` entry wiring the built stdio server as an executable CLI (`wallapop-mcp`)
-- [ ] MIT license file
-- [ ] README with setup instructions and an explicit unofficial/unaffiliated-with-Wallapop disclaimer
-- [ ] `package.json` metadata correct for npm publish (name, version, files, bin)
+- [x] `bin` entry wiring the built stdio server as an executable CLI (`wallapop-mcp`)
+- [x] MIT license file
+- [x] README with setup instructions and an explicit unofficial/unaffiliated-with-Wallapop disclaimer
+- [x] `package.json` metadata correct for npm publish (name, version, files, bin)
 Done when: `npm pack --dry-run` succeeds and includes the built bundle + bin entry, and the README contains the unofficial/unaffiliated disclaimer.
 Mode: loopable
