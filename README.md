@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/jaimeberdejo-wallapop-mcp-badge.png)](https://mseep.ai/app/jaimeberdejo-wallapop-mcp)
+
 # wallapop-mcp
 
 An MCP server that wraps Wallapop's public, unofficial `api/v3/search` and `api/v3/categories`
